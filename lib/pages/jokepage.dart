@@ -1,13 +1,51 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class JokePage extends StatelessWidget {
+import 'package:chuck_norris/extensions/string.dart';
+import 'package:chuck_norris/models/joke.dart';
+
+import 'package:chuck_norris/services/chucknorris.dart' as chucknorris;
+class JokePage extends StatefulWidget {
+  JokePage({Key key, this.title, this.category}) : super(key: key);
+
+  final String title;
+  final String category;
+
+  @override
+  createState() => _JokePageState();
+}
+
+class _JokePageState extends State<JokePage> {
+  Joke joke;
+  var isLoading = false;
+
+  @override
+  initState() {
+    super.initState();
+    _getRandonJoke();
+  }
+
+  _getRandonJoke() async {
+    try {
+      setState(() => isLoading = true);
+      final map = await chucknorris.getRandonJoke(widget.category);
+      joke = Joke.fromJson(map);
+    } catch (_) {
+      throw Exception('Failed to load joke categories');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   build(BuildContext context) {
+    final title = widget.title.capitalize();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Joke Detail'),
+        title: Text(title),
       ),
-      body: Center(child: RaisedButton(onPressed: () {}, child: Text('Go back'),),)
+      body: Center(child: joke != null ? Text(joke.value) : CircularProgressIndicator())
     );
   }
 }

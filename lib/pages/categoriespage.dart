@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:chuck_norris/pages/jokepage.dart';
+import 'package:chuck_norris/services/chucknorris.dart' as chucknorris;
 
 class CategoriesPage extends StatefulWidget {
   CategoriesPage({Key key, this.title}) : super(key: key);
@@ -12,24 +13,39 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  final _categories = <String>['animal', 'career', 'celebrity', 'dev', 'explicit', 'fashion', 'food', 'history', 'money', 'movie', 'music', 'political', 'religion', 'science', 'sport', 'travel'];
+  List categories = List();
+  var isLoading = false;
 
   @override
   initState() {
     super.initState();
+    _getCategories();
   }
 
-  // _onCategoryTapped(int index) {
-  //   setState(() {
-      
-  //   });
-  // }
+ _getCategories() async {
+    try {
+      setState(() => isLoading = true);
+      categories = await chucknorris.getCategories();
+    } catch (_) {
+      throw Exception('Failed to load joke categories');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
-  _buildCategory(String category) {
+  _buildCategory(index) {
+    final title = categories[index];
+    final category = categories[index];
+
     return ListTile(
-      title: Text(category),
+      title: Text(categories[index]),
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => JokePage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => JokePage( title: title, category: category),
+          )
+        );
       }
     );
   }
@@ -37,11 +53,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
   _buildCategories() {
     return ListView.builder(
       padding: EdgeInsets.all(8),
-      itemBuilder: (context, index) {
-        if (index.isOdd) return Divider();
-
-        return _buildCategory('Category');
-      },
+      itemCount: categories.length,
+      itemBuilder: (context, index) => _buildCategory(index)
     );
   }
 
@@ -50,7 +63,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: _buildCategories()
+      body: isLoading ? Center(child: CircularProgressIndicator()) : _buildCategories()
     );
   }
 }

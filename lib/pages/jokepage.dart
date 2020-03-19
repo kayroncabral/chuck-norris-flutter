@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:chuck_norris/extensions/string.dart';
 import 'package:chuck_norris/models/joke.dart';
@@ -28,8 +29,7 @@ class _JokePageState extends State<JokePage> {
   _getRandonJoke() async {
     try {
       setState(() => isLoading = true);
-      final map = await chucknorris.getRandonJoke(widget.category);
-      joke = Joke.fromJson(map);
+      joke = await chucknorris.getRandonJoke(http.Client(), widget.category);
     } catch (_) {
       throw Exception('Failed to load joke categories');
     } finally {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:chuck_norris/pages/jokepage.dart';
 import 'package:chuck_norris/services/chucknorris.dart' as chucknorris;
@@ -25,7 +26,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
  _getCategories() async {
     try {
       setState(() => isLoading = true);
-      categories = await chucknorris.getCategories();
+      categories = await chucknorris.getCategories(http.Client());
     } catch (_) {
       throw Exception('Failed to load joke categories');
     } finally {
@@ -38,7 +39,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
     final category = categories[index];
 
     return ListTile(
-      title: Text(categories[index]),
+      title: Text(
+        category,
+        key: Key('item_${index}_text')
+      ),
       onTap: () {
         Navigator.push(
           context,
@@ -52,6 +56,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   _buildCategories() {
     return ListView.builder(
+      key: Key('list'),
       padding: EdgeInsets.all(8),
       itemCount: categories.length,
       itemBuilder: (context, index) => _buildCategory(index)
